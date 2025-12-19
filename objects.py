@@ -88,13 +88,9 @@ class Player:
         else:
             raise Exception("Invalid coordinates given")
 
-#testing:
+#Testing:
 I = Inventory()
 I.insert_item("SWORD")
 I.insert_item("SHEILD")
-I.insert_item("POTION")
-I.insert_item("BOOT")
-I.insert_item("TOME")
-I.insert_item("ARROWS")
 I.insert_item("PAPER")
 print(I)
