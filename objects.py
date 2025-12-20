@@ -58,6 +58,25 @@ class Inventory:
                     break
         else:
             raise Exception("Inventory is full")
+    
+    def move_item(self, item, place: int, wa = None, wp = None, it = None):
+        place -= 1
+        if wa and item in self.active_items:
+            i = item
+            self.active_items[list.index(self.active_items, item)] = self.active_items[place]
+            self.active_items[place] = i
+
+        elif wp and item in self.passive_items:
+            i = item
+            self.passive_items[list.index(self.passive_items, item)] = self.passive_items[place]
+            self.passive_items[place] = i
+        
+        elif it and ((item in self.active_items) or (item in self.passive_items)):
+            if place < 5:
+                i = item
+                self.active_items[place] = self.passive_items[list.index(self.passive_items, item)]
+                self.passive_items[list.index(self.passive_items, item)] = i
+        
 
 
 class Player:
@@ -93,4 +112,11 @@ I = Inventory()
 I.insert_item("SWORD")
 I.insert_item("SHEILD")
 I.insert_item("PAPER")
+I.insert_item("PAPER")
+I.insert_item("PAPER")
+I.insert_item("PAPER")
+I.insert_item("POTION")
+I.insert_item("PAPER")
+I.insert_item("PAPER")
+I.move_item("POTION", 20, None, 1)
 print(I)
