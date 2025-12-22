@@ -77,8 +77,6 @@ class Inventory:
                 self.active_items[place] = self.passive_items[list.index(self.passive_items, item)]
                 self.passive_items[list.index(self.passive_items, item)] = i
         
-
-
 class Player:
     """
     Player Class
@@ -116,7 +114,6 @@ I.insert_item("PAPER")
 I.insert_item("PAPER")
 I.insert_item("PAPER")
 I.insert_item("POTION")
-I.insert_item("PAPER")
-I.insert_item("PAPER")
+
 I.move_item("POTION", 20, None, 1)
 print(I)
