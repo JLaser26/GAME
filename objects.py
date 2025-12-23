@@ -59,23 +59,23 @@ class Inventory:
         else:
             raise Exception("Inventory is full")
     
-    def move_item(self, item, place: int, wa = None, wp = None, it = None):
-        place -= 1
-        if wa and item in self.active_items:
-            i = item
-            self.active_items[list.index(self.active_items, item)] = self.active_items[place]
-            self.active_items[place] = i
+    def move_item(self, item_place: int, cat: str, move_place: int):
+        item_place -= 1
+        move_place -= 1
 
-        elif wp and item in self.passive_items:
-            i = item
-            self.passive_items[list.index(self.passive_items, item)] = self.passive_items[place]
-            self.passive_items[place] = i
+        if move_place <= self.active_items_storage and cat == "A":
+            it = self.active_items[item_place]
+            self.active_items[item_place] = self.active_items[move_place]
+            self.active_items[move_place] = it
+        if move_place > self.active_items_storage and cat == "A":
+            it = self.active_items[item_place]
+            self.active_items[item_place] = self.passive_items[move_place]
+            self.passive_items[move_place] = it
+        if move_place > self.active_items_storage and cat == "P":
+            it = self.passive_items[item_place]
+            self.passive_items[item_place] = self.passive_items[move_place]
+            self.passive_items[move_place] = it
         
-        elif it and ((item in self.active_items) or (item in self.passive_items)):
-            if place < 5:
-                i = item
-                self.active_items[place] = self.passive_items[list.index(self.passive_items, item)]
-                self.passive_items[list.index(self.passive_items, item)] = i
         
 class Player:
     """
@@ -115,5 +115,5 @@ I.insert_item("PAPER")
 I.insert_item("PAPER")
 I.insert_item("POTION")
 
-I.move_item("POTION", 20, None, 1)
+I.move_item(2, "P", 13)
 print(I)
