@@ -10,8 +10,8 @@ class Player(pygame.sprite.Sprite):
         self.frames = {}
         for direction in ["down", "up", "left", "right"]:
             self.frames[direction] = [
-                pygame.image.load(f"assets/{direction}_0.png").convert_alpha(),
-                pygame.image.load(f"assets/{direction}_1.png").convert_alpha()
+                pygame.image.load(f"assets/player_movements/{direction}_0.png").convert_alpha(),
+                pygame.image.load(f"assets/player_movements/{direction}_1.png").convert_alpha()
             ]
 
         self.direction = "down"
