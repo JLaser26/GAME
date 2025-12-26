@@ -1,0 +1,13 @@
+# settings.py
+
+WIDTH, HEIGHT = 800, 600
+FPS = 60
+TILESIZE = 32
+
+PLAYER_SPEED = 200
+
+# Colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GRAY  = (100, 100, 100)
+GREEN = (0, 200, 0)
