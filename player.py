@@ -1,12 +1,15 @@
 # player.py
 import pygame
-from settings import PLAYER_SPEED, TILESIZE, GREEN
+from settings import PLAYER_SPEED
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, walls):
         super().__init__()
-        self.image = pygame.Surface((TILESIZE, TILESIZE))
-        self.image.fill(GREEN)
+
+        self.image = pygame.image.load(
+            "assets/player.png"
+        ).convert_alpha()
+
         self.rect = self.image.get_rect(topleft=(x, y))
 
         self.walls = walls
@@ -29,7 +32,6 @@ class Player(pygame.sprite.Sprite):
     def move(self, dt):
         self.rect.x += self.vx * dt
         self.collide("x")
-
         self.rect.y += self.vy * dt
         self.collide("y")
 
