@@ -1,9 +1,9 @@
 # main.py
 import pygame
 from settings import *
-from tilemap import Tile, load_map
 from player import Player
 from camera import Camera
+from map_manager import MapManager
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -18,36 +18,25 @@ tiles = pygame.sprite.Group()
 # -----------------------------
 # Load tile images
 # -----------------------------
-floor_img = pygame.image.load("assets/tiles/floor.png").convert_alpha()
-wall_img = pygame.image.load("assets/tiles/wall.png").convert_alpha()
-tree_img = pygame.image.load("assets/tiles/tree.png").convert_alpha()
-building_img = pygame.image.load("assets/tiles/building.png").convert_alpha()
+tile_images = {
+    "floor": pygame.image.load("assets/tiles/floor.png").convert_alpha(),
+    "wall": pygame.image.load("assets/tiles/wall.png").convert_alpha(),
+    "tree": pygame.image.load("assets/tiles/tree.png").convert_alpha(),
+    "building": pygame.image.load("assets/tiles/building.png").convert_alpha(),
+}
 
 # -----------------------------
-# Load map from file
+# Create Map Manager
 # -----------------------------
-map_data = load_map("maps/map_01.txt")
+map_manager = MapManager(
+    tile_images=tile_images,
+    all_sprites=all_sprites,
+    walls=walls,
+    tiles=tiles
+)
 
-for row, line in enumerate(map_data):
-    for col, char in enumerate(line):
-        x = col * TILESIZE
-        y = row * TILESIZE
-
-        if char == "W":
-            tile = Tile(wall_img, x, y, solid=True)
-            walls.add(tile)
-
-        elif char == "T":
-            tile = Tile(tree_img, x, y, solid=True)
-
-        elif char == "B":
-            tile = Tile(building_img, x, y, solid=True)
-
-        else:  # floor
-            tile = Tile(floor_img, x, y, solid=False)
-
-        tiles.add(tile)
-        all_sprites.add(tile)
+# Load base map
+map_manager.load("map_01")
 
 # -----------------------------
 # Create player
