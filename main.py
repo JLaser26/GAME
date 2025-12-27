@@ -1,9 +1,9 @@
 # main.py
 import pygame
 from settings import *
-from tilemap import MAP, Wall
 from player import Player
 from camera import Camera
+from tilemap import MAP, Tile
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -13,13 +13,28 @@ clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
 walls = pygame.sprite.Group()
 
-# Build map
+
+# Load tile images
+wall_img = pygame.image.load("assets/tiles/wall.png").convert_alpha()
+floor_img = pygame.image.load("assets/tiles/floor.png").convert_alpha()
+
+tiles = pygame.sprite.Group()
+walls = pygame.sprite.Group()
+
 for row, line in enumerate(MAP):
     for col, char in enumerate(line):
-        if char == "1":
-            wall = Wall(col * TILESIZE, row * TILESIZE)
-            walls.add(wall)
-            all_sprites.add(wall)
+        x = col * TILESIZE
+        y = row * TILESIZE
+
+        if char == "W":
+            tile = Tile(wall_img, x, y, solid=True)
+            walls.add(tile)
+        else:
+            tile = Tile(floor_img, x, y)
+
+        tiles.add(tile)
+        all_sprites.add(tile)
+
 
 player = Player(64, 64, walls)
 all_sprites.add(player)
