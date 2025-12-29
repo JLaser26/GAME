@@ -1,7 +1,12 @@
 # map_manager.py
-from tilemap import Tile, load_map
+import os
+import json
+import pygame
+
 from settings import TILESIZE
-from door_links import DOOR_LINKS
+from tilemap import Tile
+from portal_registry import PORTAL_LINKS
+
 
 class MapManager:
     def __init__(self, tile_images, all_sprites, walls, tiles):
@@ -10,57 +15,99 @@ class MapManager:
         self.walls = walls
         self.tiles = tiles
 
-        self.doors = []
-        self.spawns = {}
         self.current_map = None
 
+        # runtime data
+        self.spawns = {}        # {"spawn_1": (x, y)}
+        self.portals = []       # [{"id": int, "rect": Rect}]
+        self.portal_cooldown = 0
+
+    # --------------------------------------------------
+    # Load a map (tiles + metadata)
+    # --------------------------------------------------
     def load(self, map_name):
-        # Remove old tiles (NOT player)
+        self.current_map = map_name
+
+        # --- remove old tiles (NOT player) ---
         for sprite in list(self.tiles):
             self.all_sprites.remove(sprite)
 
         self.tiles.empty()
         self.walls.empty()
-        self.doors.clear()
+        self.portals.clear()
         self.spawns.clear()
 
-        map_data = load_map(f"maps/{map_name}.txt")
-        self.current_map = map_name
+        # --- load tile layout ---
+        map_path = os.path.join("maps", f"{map_name}.map")
+        with open(map_path, "r") as f:
+            map_data = [line.rstrip("\n") for line in f]
 
         for row, line in enumerate(map_data):
             for col, char in enumerate(line):
-                x, y = col * TILESIZE, row * TILESIZE
+                x = col * TILESIZE
+                y = row * TILESIZE
 
                 if char == "W":
-                    tile = Tile(self.tile_images["wall"], x, y, True)
+                    tile = Tile(self.tile_images["wall"], x, y, solid=True)
                     self.walls.add(tile)
 
-                elif char == "D":
-                    tile = Tile(self.tile_images["door"], x, y, False)
-                    self.doors.append((col, row, tile))
+                elif char == "B":
+                    tile = Tile(self.tile_images["building"], x, y, solid=True)
 
-                elif char == "S":
-                    tile = Tile(self.tile_images["floor"], x, y)
-                    self.spawns["spawn_1"] = (x, y)
+                elif char == "T":
+                    tile = Tile(self.tile_images["tree"], x, y, solid=True)
 
                 else:
-                    tile = Tile(self.tile_images["floor"], x, y)
+                    tile = Tile(self.tile_images["floor"], x, y, solid=False)
 
                 self.tiles.add(tile)
                 self.all_sprites.add(tile)
 
-    def check_door(self, player):
-        for col, row, tile in self.doors:
-            if player.rect.colliderect(tile.rect):
-                print(f"Touching door at {col, row} in {self.current_map}")
-                key = (self.current_map, (col, row))
-                print("Checking key:", key)
+        # --- load metadata ---
+        meta_path = os.path.join("maps", f"{map_name}.meta")
+        if os.path.exists(meta_path):
+            with open(meta_path, "r") as f:
+                meta = json.load(f)
 
-                if key in DOOR_LINKS:
-                    print("Door link FOUND")
-                    return DOOR_LINKS[key]
-                else:
-                    print("Door link NOT found")
+            # spawns
+            for name, (row, col) in meta.get("spawns", {}).items():
+                self.spawns[name] = (col * TILESIZE, row * TILESIZE)
+
+            # portals
+            for key, pid in meta.get("portals", {}).items():
+                # keys were saved as "(row, col)" strings
+                row, col = eval(key)
+                rect = pygame.Rect(
+                    col * TILESIZE,
+                    row * TILESIZE,
+                    TILESIZE,
+                    TILESIZE
+                )
+                self.portals.append({
+                    "id": pid,
+                    "rect": rect
+                })
+
+    # --------------------------------------------------
+    # Update (cooldowns etc.)
+    # --------------------------------------------------
+    def update(self, dt):
+        if self.portal_cooldown > 0:
+            self.portal_cooldown -= dt
+
+    # --------------------------------------------------
+    # Check portal collision
+    # --------------------------------------------------
+    def check_portal(self, player):
+        if self.portal_cooldown > 0:
+            return None
+
+        for portal in self.portals:
+            if player.rect.colliderect(portal["rect"]):
+                pid = portal["id"]
+
+                if pid in PORTAL_LINKS:
+                    self.portal_cooldown = 0.5  # seconds
+                    return PORTAL_LINKS[pid]
 
         return None
-

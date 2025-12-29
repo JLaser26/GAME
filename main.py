@@ -5,84 +5,111 @@ from player import Player
 from camera import Camera
 from map_manager import MapManager
 
+# --------------------------------------------------
+# Init
+# --------------------------------------------------
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("RPG Starter")
 clock = pygame.time.Clock()
 
+# --------------------------------------------------
 # Sprite groups
+# --------------------------------------------------
 all_sprites = pygame.sprite.Group()
-walls = pygame.sprite.Group()
 tiles = pygame.sprite.Group()
+walls = pygame.sprite.Group()
 
-# -----------------------------
+# --------------------------------------------------
 # Load tile images
-# -----------------------------
+# --------------------------------------------------
 tile_images = {
     "floor": pygame.image.load("assets/tiles/floor.png").convert_alpha(),
     "wall": pygame.image.load("assets/tiles/wall.png").convert_alpha(),
     "tree": pygame.image.load("assets/tiles/tree.png").convert_alpha(),
     "building": pygame.image.load("assets/tiles/building.png").convert_alpha(),
-    "door": pygame.image.load("assets/tiles/door.png").convert_alpha(),  # NEW
 }
 
-# -----------------------------
-# Map Manager
-# -----------------------------
-map_manager = MapManager(tile_images, all_sprites, walls, tiles)
+# --------------------------------------------------
+# Map manager
+# --------------------------------------------------
+map_manager = MapManager(
+    tile_images=tile_images,
+    all_sprites=all_sprites,
+    walls=walls,
+    tiles=tiles
+)
 
+# --------------------------------------------------
 # Load base map
-map_manager.load("map_01")
+# --------------------------------------------------
+BASE_MAP = "city_main"   # change if needed
+map_manager.load(BASE_MAP)
 
-# -----------------------------
+# --------------------------------------------------
 # Create player ONCE
-# -----------------------------
+# --------------------------------------------------
 player = Player(0, 0, walls)
-player.rect.topleft = map_manager.spawns["spawn_1"]
+
+# Spawn player (fallback safety)
+spawn_pos = map_manager.spawns.get("spawn_1", (64, 64))
+player.rect.topleft = spawn_pos
+
 all_sprites.add(player)
 
-# -----------------------------
+# --------------------------------------------------
 # Camera
-# -----------------------------
+# --------------------------------------------------
 camera = Camera()
 
-# -----------------------------
+# --------------------------------------------------
 # Game loop
-# -----------------------------
+# --------------------------------------------------
 running = True
 while running:
     dt = clock.tick(FPS) / 1000
 
+    # -----------------------------
+    # Events
+    # -----------------------------
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # Update player separately
+    # -----------------------------
+    # Update
+    # -----------------------------
     player.update(dt)
     camera.update(player)
+    map_manager.update(dt)
 
     # -----------------------------
-    # Door check
+    # Portal handling
     # -----------------------------
-    door_result = map_manager.check_door(player)
-    if door_result:
-        next_map, spawn_id = door_result
+    portal_result = map_manager.check_portal(player)
+    if portal_result:
+        next_map = portal_result
 
         map_manager.load(next_map)
 
-        # IMPORTANT: update player's wall reference
+        # update collision reference
         player.walls = walls
-        player.rect.topleft = map_manager.spawns[spawn_id]
 
+        # move player to spawn
+        spawn_pos = map_manager.spawns.get("spawn_1", (64, 64))
+        player.rect.topleft = spawn_pos
+
+    # -----------------------------
     # Draw
+    # -----------------------------
     screen.fill(BLACK)
-    # Draw tiles first
+
+    # draw tiles first
     for tile in tiles:
         screen.blit(tile.image, camera.apply(tile))
 
-    # Draw player last (on top)
+    # draw player last
     screen.blit(player.image, camera.apply(player))
-
 
     pygame.display.flip()
 
