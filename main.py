@@ -23,25 +23,22 @@ tile_images = {
     "wall": pygame.image.load("assets/tiles/wall.png").convert_alpha(),
     "tree": pygame.image.load("assets/tiles/tree.png").convert_alpha(),
     "building": pygame.image.load("assets/tiles/building.png").convert_alpha(),
+    "door": pygame.image.load("assets/tiles/door.png").convert_alpha(),  # NEW
 }
 
 # -----------------------------
-# Create Map Manager
+# Map Manager
 # -----------------------------
-map_manager = MapManager(
-    tile_images=tile_images,
-    all_sprites=all_sprites,
-    walls=walls,
-    tiles=tiles
-)
+map_manager = MapManager(tile_images, all_sprites, walls, tiles)
 
 # Load base map
 map_manager.load("map_01")
 
 # -----------------------------
-# Create player
+# Create player ONCE
 # -----------------------------
-player = Player(64, 64, walls)
+player = Player(0, 0, walls)
+player.rect.topleft = map_manager.spawns["spawn_1"]
 all_sprites.add(player)
 
 # -----------------------------
@@ -60,14 +57,32 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Update
-    all_sprites.update(dt)
+    # Update player separately
+    player.update(dt)
     camera.update(player)
+
+    # -----------------------------
+    # Door check
+    # -----------------------------
+    door_result = map_manager.check_door(player)
+    if door_result:
+        next_map, spawn_id = door_result
+
+        map_manager.load(next_map)
+
+        # IMPORTANT: update player's wall reference
+        player.walls = walls
+        player.rect.topleft = map_manager.spawns[spawn_id]
 
     # Draw
     screen.fill(BLACK)
-    for sprite in all_sprites:
-        screen.blit(sprite.image, camera.apply(sprite))
+    # Draw tiles first
+    for tile in tiles:
+        screen.blit(tile.image, camera.apply(tile))
+
+    # Draw player last (on top)
+    screen.blit(player.image, camera.apply(player))
+
 
     pygame.display.flip()
 
