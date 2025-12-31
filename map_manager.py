@@ -7,7 +7,6 @@ from settings import TILESIZE
 from tilemap import Tile
 from portal_registry import PORTAL_LINKS
 
-
 class MapManager:
     def __init__(self, assets, all_sprites, walls, tiles):
         self.assets = assets
