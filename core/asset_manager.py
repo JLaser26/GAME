@@ -36,5 +36,5 @@ class AssetManager:
         return path
 
     def clear_cache(self):
-        """Optional: free memory if needed"""
+        """Optional : free memory if needed"""
         self._images.clear()
